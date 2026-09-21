@@ -1,0 +1,166 @@
+esphome:
+  name: esp32-c3-bluetooth-proxy
+  friendly_name: ESP32-C3 Bluetooth Proxy
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# =========================
+# WIFI
+# =========================
+
+wifi:
+  ssid: "Twoje wifi"
+  password: "Hasło wifi"
+  fast_connect: true
+
+# =========================
+# HOME ASSISTANT / OTA
+# =========================
+
+api:
+  encryption:
+    key: "Wygenerowany klucz"
+
+ota:
+  - platform: esphome
+
+logger:
+  level: INFO
+
+# =========================
+# BLUETOOTH PROXY
+# =========================
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+# =========================
+# I2C - AHT20 + BMP280
+# =========================
+
+i2c:
+  sda: GPIO8
+  scl: GPIO9
+  scan: true
+
+# =========================
+# CZUJNIKI
+# =========================
+
+sensor:
+
+  # -------------------------
+  # AHT20
+  # -------------------------
+
+  - platform: aht10
+    variant: AHT20
+
+    temperature:
+      name: "Temperatura AHT20"
+      id: temperatura_aht20
+
+    humidity:
+      name: "Wilgotność AHT20"
+      id: wilgotnosc_aht20
+
+    update_interval: 30s
+
+  # -------------------------
+  # BMP280
+  # -------------------------
+
+  - platform: bmp280_i2c
+
+    temperature:
+      name: "Temperatura BMP280"
+      id: temperatura_bmp280
+
+    pressure:
+      name: "Ciśnienie atmosferyczne"
+      id: cisnienie_bmp280
+
+    update_interval: 30s
+
+  # -------------------------
+  # Temperatura ESP32
+  # -------------------------
+
+  - platform: internal_temperature
+    name: "Temperatura procesora ESP32"
+    update_interval: 60s
+    icon: "mdi:chip"
+
+# =========================
+# LD2410C - UART
+# =========================
+
+uart:
+  tx_pin: GPIO5
+  rx_pin: GPIO4
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+
+# =========================
+# LD2410C
+# =========================
+
+ld2410:
+
+# =========================
+# LD2410C - ENCJE
+# =========================
+
+binary_sensor:
+
+  - platform: ld2410
+    has_target:
+      name: "LD2410C - Obecność"
+
+  - platform: ld2410
+    has_moving_target:
+      name: "LD2410C - Ruch"
+
+  - platform: ld2410
+    has_still_target:
+      name: "LD2410C - Osoba nieruchoma"
+
+# =========================
+# RGB LED - WSPÓLNA KATODA
+# =========================
+
+output:
+
+  # Fizyczny czerwony kanał = GPIO3
+  - platform: ledc
+    pin: GPIO3
+    id: rgb_red
+
+  # Fizyczny zielony kanał = GPIO2
+  - platform: ledc
+    pin: GPIO2
+    id: rgb_green
+
+  # Fizyczny niebieski kanał = GPIO1
+  - platform: ledc
+    pin: GPIO1
+    id: rgb_blue
+
+light:
+
+  - platform: rgb
+    name: "Dioda RGB"
+    red: rgb_red
+    green: rgb_green
+    blue: rgb_blue
+    restore_mode: RESTORE_DEFAULT_OFF
